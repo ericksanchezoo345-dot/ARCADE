@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151918">
+  <title>Arcade — Descubre tu próxima partida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #151918;
+      --panel: #1d2321;
+      --panel-2: #252d2a;
+      --line: #343e39;
+      --text: #f2f3ec;
+      --muted: #9ba69e;
+      --mint: #b8f36b;
+      --coral: #ff765e;
+      --display: "Barlow Condensed", Impact, sans-serif;
+      --body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--body); font-size: 14px; }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .topbar { height: 68px; display: flex; align-items: center; gap: 32px; padding: 0 max(28px, calc((100vw - 1380px)/2)); border-bottom: 1px solid #ffffff12; background: #151918; position: sticky; top: 0; z-index: 5; }
+    .brand { display: flex; align-items: center; gap: 9px; font: 800 27px var(--display); letter-spacing: .5px; }
+    .brand-mark { display: grid; place-items: center; width: 29px; height: 29px; background: var(--mint); color: #182019; border-radius: 9px 3px 9px 3px; font: 800 20px var(--display); transform: rotate(-5deg); }
+    .nav-links { display: flex; align-items: center; gap: 24px; height: 100%; }
+    .nav-link { color: #aeb7b1; font-weight: 600; height: 100%; display: flex; align-items: center; position: relative; }
+    .nav-link.active, .nav-link:hover { color: var(--mint); }
+    .nav-link.active:after { content: ""; height: 2px; position: absolute; bottom: 0; left: 0; right: 0; background: var(--mint); }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+    .icon-button { display: grid; place-items: center; width: 39px; height: 39px; border: 1px solid transparent; background: transparent; border-radius: 8px; cursor: pointer; color: #bac2bd; position: relative; }
+    .icon-button:hover { color: var(--mint); background: #ffffff0a; }
+    .cart-count { position: absolute; top: 1px; right: 1px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 10px; display: grid; place-items: center; background: var(--coral); color: white; font-size: 10px; font-weight: 700; }
+    .profile { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #394a42; color: var(--mint); font-weight: 700; border: 1px solid #526257; }
+    main { max-width: 1380px; margin: auto; padding: 28px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 1.5px; color: var(--mint); font-size: 11px; font-weight: 700; }
+    .hero { min-height: 375px; overflow: hidden; display: grid; grid-template-columns: 1.02fr .98fr; background: #202724; border-radius: 11px; position: relative; isolation: isolate; }
+    .hero:before { content: ""; position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg,#202724f5 5%,#202724df 36%,#20272479 70%,#20272455); pointer-events: none; }
+    .hero-gallery { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; background: url("https://cdn.akamai.steamstatic.com/steam/apps/271590/header.jpg") center / cover; }
+    .hero-gallery > div { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .hero-image-carousel { position: absolute; z-index: 2; inset: 0; opacity: 1; pointer-events: none; }
+    .hero-image-carousel img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; opacity: 0; transition: opacity .8s; }
+    .hero-image-carousel img.active { opacity: 1; }
+    .detail-media.images-only .trailer-title, .detail-media.images-only .trailer-fallback { display: none; }
+    .hero-copy { position: relative; z-index: 2; padding: 43px 0 38px 47px; max-width: 570px; align-self: center; }
+    .hero h1 { margin: 13px 0 12px; max-width: 480px; font: 700 clamp(42px, 5vw, 64px)/.94 var(--display); text-transform: uppercase; }
+    .hero p { max-width: 410px; margin: 0 0 24px; color: #c0c9c2; line-height: 1.65; }
+    .hero-meta { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tag { padding: 5px 9px; background: #ffffff12; border: 1px solid #ffffff17; color: #d7ddd8; border-radius: 4px; font-size: 11px; }
+    .primary-button { min-height: 43px; display: inline-flex; justify-content: center; align-items: center; gap: 9px; padding: 0 17px; color: #192019; background: var(--mint); border: 0; border-radius: 5px; font-weight: 700; cursor: pointer; transition: background .16s, transform .16s; }
+    .primary-button:hover { background: #caff89; transform: translateY(-1px); }
+    .hero-art { position: relative; z-index: 2; display: flex; align-items: end; justify-content: end; padding: 0 35px 24px 0; }
+    .hero-art-note { border-left: 2px solid var(--mint); padding-left: 11px; color: #dce2dc; font-size: 12px; line-height: 1.5; text-shadow: 0 2px 10px #000; }
+    .hero-art-note strong { display: block; color: white; font-size: 14px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 33px 0 17px; }
+    .section-heading h2 { margin: 0; font: 600 31px/1 var(--display); text-transform: uppercase; }
+    .section-heading p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .text-action { border: 0; background: none; color: var(--mint); font-weight: 700; cursor: pointer; padding: 7px 0; }
+    .toolbar { display: flex; align-items: center; gap: 9px; margin-bottom: 17px; }
+    .search-wrap { flex: 1; min-width: 160px; position: relative; }
+    .search-wrap svg { position: absolute; left: 12px; top: 11px; color: #89958c; }
+    .search-input, .sort-select { width: 100%; height: 39px; border: 1px solid var(--line); border-radius: 5px; outline: 0; color: var(--text); background: #1d2321; }
+    .search-input { padding: 0 12px 0 38px; }
+    .search-input:focus, .sort-select:focus { border-color: #87bd4e; }
+    .sort-select { width: 156px; padding: 0 10px; }
+    .genre-tabs { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; margin: 0 0 18px; }
+    .genre-tabs::-webkit-scrollbar { display: none; }
+    .genre-tab { flex: 0 0 auto; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; color: #b1bbb4; background: transparent; cursor: pointer; }
+    .genre-tab.active, .genre-tab:hover { color: #182019; border-color: var(--mint); background: var(--mint); font-weight: 700; }
+    .catalog-layout { display: grid; grid-template-columns: 195px 1fr; gap: 22px; }
+    .filter-rail { border-right: 1px solid var(--line); padding-right: 17px; }
+    .filter-title { margin: 5px 0 12px; color: #dce2dc; text-transform: uppercase; letter-spacing: 1px; font: 600 15px var(--display); }
+    .filter-option { width: 100%; display: flex; gap: 9px; align-items: center; padding: 8px 0; background: none; border: 0; text-align: left; color: #aab4ac; cursor: pointer; }
+    .filter-option:hover, .filter-option.selected { color: var(--mint); }
+    .filter-option .dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #647169; }
+    .filter-option.selected .dot { background: var(--mint); border-color: var(--mint); box-shadow: 0 0 0 3px #b8f36b20; }
+    .catalog { min-width: 0; }
+    .results-line { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+    .game-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .game-card { min-width: 0; overflow: hidden; position: relative; background: #1d2321; border: 1px solid #ffffff0d; border-radius: 6px; transition: transform .2s, border-color .2s; }
+    .game-card:hover { transform: translateY(-3px); border-color: #b8f36b6a; }
+    .cover { aspect-ratio: 1.36; position: relative; overflow: hidden; background: #28302c; }
+    .cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .35s; }
+    .game-card:hover .cover img { transform: scale(1.045); }
+    .discount { position: absolute; z-index: 1; bottom: 8px; left: 8px; padding: 5px 7px; border-radius: 3px; background: var(--coral); color: #fff; font-size: 11px; font-weight: 700; }
+    .wishlist { position: absolute; z-index: 1; right: 8px; top: 8px; display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #ffffff36; border-radius: 50%; background: #141817b8; color: white; cursor: pointer; }
+    .wishlist.saved { color: var(--coral); }
+    .game-info { padding: 11px 11px 12px; }
+    .game-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin: 0 0 5px; font: 600 18px var(--display); }
+    .game-genre { color: #9da8a0; font-size: 11px; }
+    .game-hover-info { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 13px; background: #151918; opacity: 0; visibility: hidden; pointer-events: none; }
+    .game-card:hover .game-hover-info, .game-card:focus-within .game-hover-info { opacity: 1; visibility: visible; }
+    .game-hover-title { margin: 0; color: var(--text); font: 600 21px/1.1 var(--display); }
+    .game-hover-meta, .game-hover-price { margin: 0; color: var(--mint); font-size: 11px; font-weight: 700; }
+    .game-hover-image { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; flex: 0 0 auto; }
+    .game-hover-description { display: -webkit-box; overflow: hidden; margin: 0; color: #c0c9c2; font-size: 11px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+    .cover-open { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; }
+    .cover-open:focus-visible { outline: 2px solid var(--mint); outline-offset: -3px; }
+    .game-bottom { display: flex; justify-content: space-between; align-items: center; gap: 5px; margin-top: 13px; }
+    .price { font-weight: 700; font-size: 13px; }
+    .price-link { color: var(--mint); font-size: 11px; font-weight: 700; }
+    .price-link:hover { text-decoration: underline; }
+    .old-price { margin-right: 4px; color: #7d8880; font-size: 10px; text-decoration: line-through; font-weight: 400; }
+    .add-button { width: 31px; height: 29px; display: grid; place-items: center; border: 1px solid #46544a; background: #27312b; color: var(--mint); border-radius: 4px; cursor: pointer; }
+    .add-button:hover { background: var(--mint); color: #182019; border-color: var(--mint); }
+    .add-button:disabled { opacity: .45; cursor: not-allowed; }
+    .empty-state { grid-column: 1 / -1; padding: 56px 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; }
+    .footer { max-width: 1380px; margin: 34px auto 0; padding: 22px 28px 30px; border-top: 1px solid #ffffff12; display: flex; justify-content: space-between; gap: 20px; color: #87928a; font-size: 11px; }
+    .footer strong { color: #c6cec8; font: 600 18px var(--display); }
+    .drawer-backdrop { position: fixed; z-index: 8; inset: 0; background: #0009; opacity: 0; visibility: hidden; transition: .22s; }
+    .drawer-backdrop.open { opacity: 1; visibility: visible; }
+    .cart-drawer { position: fixed; z-index: 9; top: 0; right: 0; width: min(410px, 100vw); height: 100dvh; padding: 24px; background: #1b211f; border-left: 1px solid var(--line); transform: translateX(102%); transition: transform .25s ease; display: flex; flex-direction: column; }
+    .cart-drawer.open { transform: translateX(0); }
+    .drawer-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+    .drawer-head h2 { margin: 0; font: 600 29px var(--display); text-transform: uppercase; }
+    .close-button { width: 35px; height: 35px; border: 1px solid var(--line); background: transparent; border-radius: 5px; cursor: pointer; color: #b7c0b9; font-size: 22px; }
+    .cart-items { overflow: auto; flex: 1; }
+    .cart-item { display: grid; grid-template-columns: 68px 1fr auto; gap: 11px; padding: 14px 0; border-bottom: 1px solid #ffffff10; align-items: center; }
+    .cart-item img { width: 68px; height: 52px; object-fit: cover; border-radius: 3px; }
+    .cart-item h3 { margin: 0 0 4px; font: 600 17px var(--display); }
+    .cart-item small { color: var(--muted); }
+    .quantity { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+    .quantity button, .remove-item { cursor: pointer; color: var(--mint); border: 0; background: none; padding: 1px 4px; }
+    .cart-price { text-align: right; font-size: 12px; font-weight: 700; }
+    .remove-item { color: #a4aea7; font-size: 11px; margin-top: 4px; }
+    .cart-empty { margin: auto; text-align: center; color: var(--muted); line-height: 1.6; }
+    .cart-empty svg { color: #75837a; margin-bottom: 8px; }
+    .cart-summary { border-top: 1px solid var(--line); padding-top: 16px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 15px; }
+    .checkout { width: 100%; }
+    .game-dialog { width: min(1040px, calc(100% - 28px)); max-width: none; max-height: calc(100dvh - 28px); overflow: auto; padding: 0; color: var(--text); background: #1b211f; border: 1px solid var(--line); border-radius: 9px; }
+    .game-dialog::backdrop { background: #060908d9; backdrop-filter: blur(4px); }
+    .detail-head { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 21px; background: #1b211ff2; border-bottom: 1px solid var(--line); }
+    .detail-head h2 { margin: 0; font: 600 27px var(--display); }
+    .detail-layout { display: grid; grid-template-columns: 1.15fr .85fr; gap: 23px; padding: 21px; }
+    .detail-media, .detail-specs { min-width: 0; }
+    .detail-main-image { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 5px; background: #111; }
+    .gallery-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+    .gallery-thumb { padding: 0; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid transparent; background: #111; border-radius: 4px; cursor: pointer; }
+    .gallery-thumb[aria-current="true"] { border-color: var(--mint); }
+    .gallery-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .trailer-title, .requirements-title { margin: 20px 0 10px; color: #e8eee9; font: 600 19px var(--display); text-transform: uppercase; }
+    .trailer-player { display: block; width: 100%; aspect-ratio: 16 / 9; background: #0c100e; border-radius: 5px; }
+    .trailer-fallback { display: none; margin: 8px 0; color: var(--mint); font-weight: 700; }
+    .detail-source { display: inline-block; margin-top: 11px; color: var(--mint); font-size: 12px; font-weight: 700; }
+    .detail-source:hover { text-decoration: underline; }
+    .detail-source, .trailer-fallback { display: none !important; }
+    .spec-intro { margin: 0 0 16px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .detail-description { margin: 14px 0 0; color: #c0c9c2; font-size: 13px; line-height: 1.6; }
+    .requirements-block { padding: 12px 13px; margin-bottom: 11px; background: #242c28; border: 1px solid #ffffff0c; border-radius: 5px; }
+    .requirements-block h3 { margin: 0 0 10px; color: var(--mint); font: 600 16px var(--display); text-transform: uppercase; }
+    .requirements-list { display: grid; gap: 9px; margin: 0; }
+    .requirement-row { display: grid; grid-template-columns: minmax(80px, .7fr) 1.3fr; gap: 9px; font-size: 11px; line-height: 1.45; }
+    .requirement-row dt { color: #9ca89f; }
+    .requirement-row dd { margin: 0; color: #e2e9e3; }
+    .toast { position: fixed; z-index: 12; bottom: 22px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 11px 15px; background: #d3f59e; color: #182019; border-radius: 5px; font-weight: 700; box-shadow: 0 8px 25px #0006; transition: .2s; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    @media (max-width: 1020px) { .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .catalog-layout { grid-template-columns: 160px 1fr; gap: 15px; } .topbar { gap: 20px; } }
+    @media (max-width: 720px) { .topbar { height: 59px; padding: 0 16px; gap: 15px; } .brand { font-size: 24px; } .brand-mark { width: 26px; height: 26px; } .nav-links { gap: 14px; } .nav-link { font-size: 12px; } .nav-link:nth-child(3) { display: none; } .top-actions { gap: 3px; } .profile { display: none; } main { padding: 18px 16px 0; } .hero { min-height: 390px; grid-template-columns: 1fr; } .hero:before { background: linear-gradient(90deg,#202724f5 0%,#202724c9 55%,#20272466), url("https://cdn.akamai.steamstatic.com/steam/apps/1145360/header.jpg") center / cover; } .hero-copy { padding: 30px 23px 20px; align-self: center; } .hero h1 { font-size: 53px; } .hero-art { padding: 0 23px 19px; } .catalog-layout { display: block; } .filter-rail { display: none; } .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .section-heading { margin-top: 27px; } .section-heading h2 { font-size: 28px; } .toolbar { flex-wrap: wrap; } .search-wrap { flex-basis: 100%; } .sort-select { width: 100%; } .footer { padding: 19px 16px 25px; } .detail-layout { grid-template-columns: 1fr; padding: 15px; gap: 8px; } .detail-head { padding: 13px 15px; } .detail-head h2 { font-size: 24px; } .requirements-block { padding: 11px; } }
+    @media (max-width: 390px) { .nav-links { gap: 9px; } .nav-link { font-size: 11px; } .game-title { font-size: 16px; } .game-info { padding: 9px; } .game-bottom { margin-top: 10px; } }
+    @media (max-width: 720px) { .hero:before { background: linear-gradient(90deg,#202724f5 0%,#202724ce 58%,#20272472); } }
+    @media (prefers-reduced-motion: reduce) { *, *:before, *:after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="Arcade, inicio"><span class="brand-mark">A</span> ARCADE</a>
+    <nav class="nav-links" aria-label="Navegación principal">
+      <a class="nav-link active" href="#catalogo">Tienda</a>
+      <a class="nav-link" href="#catalogo" data-nav-filter="Tendencia">Tendencias</a>
+      <a class="nav-link" href="#genreTabs">Géneros</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-button" id="headerSearch" aria-label="Ir a búsqueda" title="Buscar"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
+      <button class="icon-button" id="openCart" aria-label="Abrir carrito" title="Carrito"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="cart-count" id="cartCount">0</span></button>
+      <span class="profile" title="Tu perfil">M</span>
+    </div>
+  </header>
+  <main id="inicio">
+    <section class="hero" aria-label="Grand Theft Auto V, juego destacado">
+      <div class="hero-gallery" aria-label="Galería de imágenes de Grand Theft Auto V">
+        <div class="hero-image-carousel" id="heroImageCarousel" aria-hidden="true">
+          <img class="active" src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_32aa18ab3175e3002217862dd5917646d298ab6b.600x338.jpg?t=1765387725" alt="">
+          <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_2744f112fa060320d191a50e8b3a92441a648a56.600x338.jpg?t=1765387725" alt="">
+          <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/header.jpg?t=1765387725" alt="">
+        </div>
+      </div>
+      <div class="hero-copy">
+        <span class="eyebrow">Selección Arcade · Rockstar North</span>
+        <h1>Grand Theft<br>Auto V</h1>
+        <p>Tres vidas cruzadas en Los Santos. Recorre una ciudad abierta, cambia de personaje y prepara golpes a gran escala.</p>
+        <div class="hero-meta"><span class="tag">Acción</span><span class="tag">Mundo abierto</span><span class="tag">Un jugador</span></div>
+        <button class="primary-button" id="heroBuy">Ver ficha y requisitos <span aria-hidden="true">↗</span></button>
+      </div>
+      <div class="hero-art"><div class="hero-art-note"><strong>Grand Theft Auto V</strong>Capturas de Steam</div></div>
+    </section>
+    <section id="catalogo">
+      <div class="section-heading"><div><span class="eyebrow">Encuentra tu siguiente mundo</span><h2>Explora la tienda</h2><p>Grandes historias. Nuevas formas de jugar.</p></div><button class="text-action" id="wishlistView">♡ Mi lista</button></div>
+      <div class="toolbar">
+        <div class="search-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input class="search-input" id="searchInput" type="search" placeholder="Busca un juego, género o estudio" aria-label="Buscar juegos"></div>
+        <select class="sort-select" id="sortSelect" aria-label="Ordenar juegos"><option value="featured">Orden: destacados</option><option value="price-low">Precio: menor a mayor</option><option value="price-high">Precio: mayor a menor</option><option value="name">Nombre: A-Z</option></select>
+      </div>
+      <div class="genre-tabs" id="genreTabs" aria-label="Filtrar por género"></div>
+      <div class="catalog-layout">
+        <aside class="filter-rail" aria-label="Filtros de juegos">
+          <h3 class="filter-title">Descubrir</h3>
+          <button class="filter-option selected" data-collection="Todos"><span class="dot"></span>Todos los juegos</button>
+          <button class="filter-option" data-collection="Tendencia"><span class="dot"></span>En tendencia</button>
+          <button class="filter-option" data-collection="Ofertas"><span class="dot"></span>Ofertas</button>
+          <h3 class="filter-title" style="margin-top:26px">Tu biblioteca</h3>
+          <button class="filter-option" id="railWishlist"><span class="dot"></span>Lista de deseos</button>
+        </aside>
+        <div class="catalog"><div class="results-line"><span id="resultCount">0 juegos</span><span>Steam España · precios sujetos a cambios</span></div><div class="game-grid" id="gameGrid" aria-live="polite"></div></div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><strong>ARCADE</strong><span>Una tienda independiente para quienes viven jugando.</span><span>© 2026 Arcade</span></footer>
+  <div class="drawer-backdrop" id="backdrop"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compra" aria-hidden="true">
+    <div class="drawer-head"><h2>Tu carrito <span id="cartTitleCount" style="color:var(--mint)"></span></h2><button class="close-button" id="closeCart" aria-label="Cerrar carrito">×</button></div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-summary" id="cartSummary"></div>
+  </aside>
+  <dialog class="game-dialog" id="gameDialog" aria-labelledby="detailTitle"></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <script>
+    const steamPriceSnapshot = {
+      "105600": { price: 4.87, oldPrice: 9.75, discount: 50 },
+      "588650": { price: 24.99 },
+      "268910": { price: 19.99 },
+      "387290": { price: 19.99 },
+      "632360": { price: 8.24, oldPrice: 24.99, discount: 67 },
+      "292030": { price: 49.99 },
+      "1086940": { price: 59.99 },
+      "1245620": { price: 59.99 },
+      "1091500": { price: 17.99, oldPrice: 59.99, discount: 70 },
+      "489830": { price: 39.99 },
+      "1174180": { price: 14.99, oldPrice: 59.99, discount: 75 },
+      "570": { price: 0 },
+      "730": { price: 0 },
+      "440": { price: 0 },
+      "1172470": { price: 0 },
+      "230410": { price: 0 },
+      "1085660": { price: 0 },
+      "359550": { price: 0 },
+      "578080": { price: 0 },
+      "550": { price: 9.69 },
+      "220": { price: 9.69 },
+      "8870": { price: 29.99 },
+      "400": { price: 9.69 },
+      "304430": { price: 22.99 },
+      "48000": { price: 11.49 },
+      "1426210": { price: 39.99 },
+      "1222700": { price: 29.99 },
+      "728880": { price: 22.99 },
+      "739630": { price: 18.99 },
+      "2050650": { price: 39.99 },
+      "883710": { price: 39.99 },
+      "57300": { price: 19.50 },
+      "238320": { price: 14.79 },
+      "264710": { price: 29.99 },
+      "275850": { price: 58.99 },
+      "892970": { price: 29.99 },
+      "252490": { price: 39.99 },
+      "242760": { price: 16.79 },
+      "427520": { price: 32.00 },
+      "526870": { price: 38.99 },
+      "294100": { price: 31.99 },
+      "255710": { price: 27.99 },
+      "289070": { price: 59.99 },
+      "268500": { price: 19.99 },
+      "1142710": { price: 8.99, oldPrice: 59.99, discount: 85 },
+      "813780": { price: 32.99 },
+      "1551360": { price: 59.99 },
+      "227300": { price: 19.99 },
+      "1250410": { price: 24.49, oldPrice: 69.99, discount: 65 },
+      "1222670": { price: 0 },
+      "703080": { price: 44.99 },
+      "2878980": { price: 69.99 },
+      "814380": { price: 29.99, oldPrice: 59.99, discount: 50 },
+      "601150": { price: 7.49, oldPrice: 29.99, discount: 75 },
+      "582010": { price: 29.99 },
+      "2138710": { price: 9.99, oldPrice: 39.99, discount: 75 },
+      "753640": { price: 11.49, oldPrice: 22.99, discount: 50 },
+      "1172620": { price: 39.99 },
+      "1055540": { price: 3.62, oldPrice: 6.59, discount: 45 },
+      "837470": { price: 18.99 },
+      "632470": { price: 37.99 },
+      "435150": { price: 44.99 },
+      "1687950": { price: 59.99 },
+      "2054970": { price: 39.99 },
+      "281990": { price: 49.99 },
+      "1158310": { price: 14.99, oldPrice: 49.99, discount: 70 },
+      "1677280": { price: 54.99 },
+      "1466860": { price: 39.99 },
+      "1290000": { price: 24.99 },
+      "613100": { price: 24.50 },
+      "493340": { price: 37.99 },
+      "535930": { price: 7.49, oldPrice: 29.99, discount: 75 },
+      "244210": { price: 19.99 },
+      "1222680": { price: 69.99 },
+      "690790": { price: 19.99 },
+      "210970": { price: 36.99 },
+      "835960": { price: 2.89, oldPrice: 28.99, discount: 90 },
+      "239030": { price: 9.75 },
+      "1057090": { price: 29.99 },
+      "250760": { price: 31.99, oldPrice: 39.99, discount: 20 },
+      "253230": { price: 28.99 },
+      "1693980": { price: 59.99 },
+      "601430": { price: 29.99 },
+      "860510": { price: 29.99 },
+      "305620": { price: 4.24, oldPrice: 16.99, discount: 75 },
+      "815370": { price: 2.39, oldPrice: 23.99, discount: 90 },
+      "962130": { price: 39.99 },
+      "1794680": { price: 3.74, oldPrice: 4.99, discount: 25 },
+      "2379780": { price: 13.99 },
+      "1145350": { price: 28.99 },
+      "1313140": { price: 11.49, oldPrice: 22.99, discount: 50 },
+      "1337520": { price: 7.49, oldPrice: 14.99, discount: 50 },
+      "271590": { price: 29.99, oldPrice: 59.99, discount: 50 },
+      "2488620": { price: 29.99, oldPrice: 59.99, discount: 50 },
+      "2252570": { price: 29.99, oldPrice: 59.99, discount: 50 }
+    };
+    const games = [
+      { id: "stardew", steamId: "413150", title: "Stardew Valley", genre: "Simulación", studio: "ConcernedApe", price: 13.99 },
+      { id: "hades", steamId: "1145360", title: "Hades", genre: "Acción", studio: "Supergiant Games", price: 24.50 },
+      { id: "gta-v", steamId: "271590", title: "Grand Theft Auto V", genre: "Aventura", studio: "Rockstar North", localDescription: "Vive las historias entrelazadas de Michael, Franklin y Trevor en Los Santos. Explora la ciudad, cambia entre sus protagonistas y prepara golpes en una aventura de mundo abierto.", noTrailer: true, tags: ["Tendencia", "Ofertas"] },
+      { id: "hollow-knight", steamId: "367520", title: "Hollow Knight", genre: "Aventura", studio: "Team Cherry", price: 14.79 },
+      { id: "portal-2", steamId: "620", title: "Portal 2", genre: "Puzles", studio: "Valve", price: 9.69 },
+      { id: "celeste", steamId: "504230", title: "Celeste", genre: "Plataformas", studio: "Maddy Makes Games", price: 4.74, oldPrice: 18.99, discount: 75, tags: ["Ofertas"] },
+      { id: "slay-the-spire", steamId: "646570", title: "Slay the Spire", genre: "Cartas", studio: "Mega Crit", price: 22.99 },
+      { id: "terraria", steamId: "105600", title: "Terraria", genre: "Sandbox", studio: "Re-Logic" },
+      { id: "dead-cells", steamId: "588650", title: "Dead Cells", genre: "Roguelike", studio: "Motion Twin", localDescription: "Explora una isla en constante cambio en este roguelike de acción y plataformas. Combina armas, habilidades y mejoras en cada intento mientras descubres los secretos del reino." },
+      { id: "cuphead", steamId: "268910", title: "Cuphead", genre: "Plataformas", studio: "Studio MDHR" },
+      { id: "ori-definitive", steamId: "387290", title: "Ori and the Blind Forest: Definitive Edition", genre: "Plataformas", studio: "Moon Studios" },
+      { id: "risk-of-rain-2", steamId: "632360", title: "Risk of Rain 2", genre: "Roguelike", studio: "Hopoo Games" },
+      { id: "witcher-3", steamId: "292030", title: "The Witcher 3: Wild Hunt", genre: "Rol", studio: "CD PROJEKT RED" },
+      { id: "baldurs-gate-3", steamId: "1086940", title: "Baldur's Gate 3", genre: "Rol", studio: "Larian Studios" },
+      { id: "elden-ring", steamId: "1245620", title: "ELDEN RING", genre: "Rol", studio: "FromSoftware" },
+      { id: "cyberpunk-2077", steamId: "1091500", title: "Cyberpunk 2077", genre: "Rol", studio: "CD PROJEKT RED" },
+      { id: "skyrim-se", steamId: "489830", title: "The Elder Scrolls V: Skyrim Special Edition", genre: "Rol", studio: "Bethesda Game Studios" },
+      { id: "red-dead-2", steamId: "1174180", title: "Red Dead Redemption 2", genre: "Aventura", studio: "Rockstar Games" },
+      { id: "dota-2", steamId: "570", title: "Dota 2", genre: "MOBA", studio: "Valve" },
+      { id: "counter-strike-2", steamId: "730", title: "Counter-Strike 2", genre: "FPS", studio: "Valve" },
+      { id: "team-fortress-2", steamId: "440", title: "Team Fortress 2", genre: "FPS", studio: "Valve" },
+      { id: "apex-legends", steamId: "1172470", title: "Apex Legends", genre: "Battle Royale", studio: "Respawn Entertainment" },
+      { id: "warframe", steamId: "230410", title: "Warframe", genre: "Acción", studio: "Digital Extremes" },
+      { id: "destiny-2", steamId: "1085660", title: "Destiny 2", genre: "FPS", studio: "Bungie" },
+      { id: "rainbow-six-siege", steamId: "359550", title: "Tom Clancy's Rainbow Six Siege", genre: "FPS táctico", studio: "Ubisoft Montreal" },
+      { id: "pubg", steamId: "578080", title: "PUBG: BATTLEGROUNDS", genre: "Battle Royale", studio: "KRAFTON" },
+      { id: "left-4-dead-2", steamId: "550", title: "Left 4 Dead 2", genre: "FPS", studio: "Valve" },
+      { id: "half-life-2", steamId: "220", title: "Half-Life 2", genre: "FPS", studio: "Valve" },
+      { id: "bioshock-infinite", steamId: "8870", title: "BioShock Infinite", genre: "FPS", studio: "Irrational Games" },
+      { id: "portal", steamId: "400", title: "Portal", genre: "Puzles", studio: "Valve" },
+      { id: "inside", steamId: "304430", title: "INSIDE", genre: "Aventura", studio: "Playdead" },
+      { id: "limbo", steamId: "48000", title: "LIMBO", genre: "Puzles", studio: "Playdead" },
+      { id: "it-takes-two", steamId: "1426210", title: "It Takes Two", genre: "Cooperativo", studio: "Hazelight Studios" },
+      { id: "a-way-out", steamId: "1222700", title: "A Way Out", genre: "Cooperativo", studio: "Hazelight Studios" },
+      { id: "overcooked-2", steamId: "728880", title: "Overcooked! 2", genre: "Fiesta", studio: "Ghost Town Games" },
+      { id: "phasmophobia", steamId: "739630", title: "Phasmophobia", genre: "Terror", studio: "Kinetic Games" },
+      { id: "resident-evil-4", steamId: "2050650", title: "Resident Evil 4", genre: "Terror", studio: "CAPCOM" },
+      { id: "resident-evil-2", steamId: "883710", title: "Resident Evil 2", genre: "Terror", studio: "CAPCOM" },
+      { id: "amnesia-dark-descent", steamId: "57300", title: "Amnesia: The Dark Descent", genre: "Terror", studio: "Frictional Games" },
+      { id: "outlast", steamId: "238320", title: "Outlast", genre: "Terror", studio: "Red Barrels" },
+      { id: "subnautica", steamId: "264710", title: "Subnautica", genre: "Supervivencia", studio: "Unknown Worlds" },
+      { id: "no-mans-sky", steamId: "275850", title: "No Man's Sky", genre: "Supervivencia", studio: "Hello Games" },
+      { id: "valheim", steamId: "892970", title: "Valheim", genre: "Supervivencia", studio: "Iron Gate AB" },
+      { id: "rust", steamId: "252490", title: "Rust", genre: "Supervivencia", studio: "Facepunch Studios" },
+      { id: "the-forest", steamId: "242760", title: "The Forest", genre: "Supervivencia", studio: "Endnight Games" },
+      { id: "factorio", steamId: "427520", title: "Factorio", genre: "Estrategia", studio: "Wube Software" },
+      { id: "satisfactory", steamId: "526870", title: "Satisfactory", genre: "Simulación", studio: "Coffee Stain Studios" },
+      { id: "rimworld", steamId: "294100", title: "RimWorld", genre: "Simulación", studio: "Ludeon Studios" },
+      { id: "cities-skylines", steamId: "255710", title: "Cities: Skylines", genre: "Simulación", studio: "Colossal Order" },
+      { id: "civilization-6", steamId: "289070", title: "Sid Meier's Civilization VI", genre: "Estrategia", studio: "Firaxis Games" },
+      { id: "xcom-2", steamId: "268500", title: "XCOM 2", genre: "Estrategia", studio: "Firaxis Games" },
+      { id: "total-war-warhammer-3", steamId: "1142710", title: "Total War: WARHAMMER III", genre: "Estrategia", studio: "Creative Assembly" },
+      { id: "aoe2-definitive", steamId: "813780", title: "Age of Empires II: Definitive Edition", genre: "Estrategia", studio: "Forgotten Empires" },
+      { id: "f1-24", steamId: "2488620", title: "F1 24", genre: "Carreras", studio: "Codemasters", tags: ["Tendencia", "Ofertas"] },
+      { id: "forza-horizon-5", steamId: "1551360", title: "Forza Horizon 5", genre: "Carreras", studio: "Playground Games" },
+      { id: "euro-truck-2", steamId: "227300", title: "Euro Truck Simulator 2", genre: "Simulación", studio: "SCS Software" },
+      { id: "flight-simulator", steamId: "1250410", title: "Microsoft Flight Simulator", genre: "Simulación", studio: "Asobo Studio" },
+      { id: "the-sims-4", steamId: "1222670", title: "The Sims 4", genre: "Simulación", studio: "Maxis" },
+      { id: "planet-zoo", steamId: "703080", title: "Planet Zoo", genre: "Simulación", studio: "Frontier Developments" },
+      { id: "football-manager-2024", steamId: "2252570", title: "Football Manager 2024", genre: "Deportes", studio: "Sports Interactive", tags: ["Tendencia", "Ofertas"] },
+      { id: "nba-2k25", steamId: "2878980", title: "NBA 2K25", genre: "Deportes", studio: "Visual Concepts" },
+      { id: "sekiro", steamId: "814380", title: "Sekiro: Shadows Die Twice", genre: "Acción", studio: "FromSoftware" },
+      { id: "devil-may-cry-5", steamId: "601150", title: "Devil May Cry 5", genre: "Acción", studio: "CAPCOM" },
+      { id: "monster-hunter-world", steamId: "582010", title: "Monster Hunter: World", genre: "Acción", studio: "CAPCOM" },
+      { id: "sifu", steamId: "2138710", title: "Sifu", genre: "Acción", studio: "Sloclap" },
+      { id: "outer-wilds", steamId: "753640", title: "Outer Wilds", genre: "Aventura", studio: "Mobius Digital" },
+      { id: "sea-of-thieves", steamId: "1172620", title: "Sea of Thieves", genre: "Aventura", studio: "Rare Ltd" },
+      { id: "a-short-hike", steamId: "1055540", title: "A Short Hike", genre: "Aventura", studio: "adamgryu" },
+      { id: "untitled-goose-game", steamId: "837470", title: "Untitled Goose Game", genre: "Aventura", studio: "House House" },
+      { id: "disco-elysium", steamId: "632470", title: "Disco Elysium - The Final Cut", genre: "Rol", studio: "ZA/UM" },
+      { id: "divinity-original-sin-2", steamId: "435150", title: "Divinity: Original Sin 2", genre: "Rol", studio: "Larian Studios" },
+      { id: "persona-5-royal", steamId: "1687950", title: "Persona 5 Royal", genre: "Rol", studio: "ATLUS" },
+      { id: "dragons-dogma-2", steamId: "2054970", title: "Dragon's Dogma 2", genre: "Rol", studio: "CAPCOM" },
+      { id: "stellaris", steamId: "281990", title: "Stellaris", genre: "Estrategia", studio: "Paradox Development Studio" },
+      { id: "crusader-kings-3", steamId: "1158310", title: "Crusader Kings III", genre: "Estrategia", studio: "Paradox Development Studio" },
+      { id: "company-of-heroes-3", steamId: "1677280", title: "Company of Heroes 3", genre: "Estrategia", studio: "Relic Entertainment" },
+      { id: "age-of-empires-4", steamId: "1466860", title: "Age of Empires IV", genre: "Estrategia", studio: "Relic Entertainment" },
+      { id: "powerwash-simulator", steamId: "1290000", title: "PowerWash Simulator", genre: "Simulación", studio: "FuturLab" },
+      { id: "house-flipper", steamId: "613100", title: "House Flipper", genre: "Simulación", studio: "Frozen District" },
+      { id: "planet-coaster", steamId: "493340", title: "Planet Coaster", genre: "Simulación", studio: "Frontier Developments" },
+      { id: "two-point-hospital", steamId: "535930", title: "Two Point Hospital", genre: "Simulación", studio: "Two Point Studios" },
+      { id: "assetto-corsa", steamId: "244210", title: "Assetto Corsa", genre: "Carreras", studio: "Kunos Simulazioni" },
+      { id: "need-for-speed-heat", steamId: "1222680", title: "Need for Speed Heat", genre: "Carreras", studio: "Ghost Games" },
+      { id: "dirt-rally-2", steamId: "690790", title: "DiRT Rally 2.0", genre: "Carreras", studio: "Codemasters" },
+      { id: "the-witness", steamId: "210970", title: "The Witness", genre: "Puzles", studio: "Thekla, Inc." },
+      { id: "talos-principle-2", steamId: "835960", title: "The Talos Principle 2", genre: "Puzles", studio: "Croteam" },
+      { id: "papers-please", steamId: "239030", title: "Papers, Please", genre: "Puzles", studio: "Lucas Pope" },
+      { id: "ori-will-of-the-wisps", steamId: "1057090", title: "Ori and the Will of the Wisps", genre: "Plataformas", studio: "Moon Studios" },
+      { id: "shovel-knight-treasure-trove", steamId: "250760", title: "Shovel Knight: Treasure Trove", genre: "Plataformas", studio: "Yacht Club Games" },
+      { id: "a-hat-in-time", steamId: "253230", title: "A Hat in Time", genre: "Plataformas", studio: "Gears for Breakfast" },
+      { id: "dead-space-remake", steamId: "1693980", title: "Dead Space", genre: "Terror", studio: "Motive" },
+      { id: "evil-within-2", steamId: "601430", title: "The Evil Within 2", genre: "Terror", studio: "Tango Gameworks" },
+      { id: "little-nightmares-2", steamId: "860510", title: "Little Nightmares II", genre: "Terror", studio: "Tarsier Studios" },
+      { id: "the-long-dark", steamId: "305620", title: "The Long Dark", genre: "Supervivencia", studio: "Hinterland Studio" },
+      { id: "green-hell", steamId: "815370", title: "Green Hell", genre: "Supervivencia", studio: "Creepy Jar" },
+      { id: "grounded", steamId: "962130", title: "Grounded", genre: "Supervivencia", studio: "Obsidian Entertainment" },
+      { id: "vampire-survivors", steamId: "1794680", title: "Vampire Survivors", genre: "Roguelike", studio: "poncle" },
+      { id: "balatro", steamId: "2379780", title: "Balatro", genre: "Roguelike", studio: "LocalThunk" },
+      { id: "hades-2", steamId: "1145350", title: "Hades II", genre: "Roguelike", studio: "Supergiant Games" },
+      { id: "cult-of-the-lamb", steamId: "1313140", title: "Cult of the Lamb", genre: "Roguelike", studio: "Massive Monster" },
+      { id: "risk-of-rain-returns", steamId: "1337520", title: "Risk of Rain Returns", genre: "Roguelike", studio: "Hopoo Games" }
+    ].map(game => ({ ...game, ...(steamPriceSnapshot[game.steamId] || {}), price: steamPriceSnapshot[game.steamId]?.price ?? game.price ?? null, oldPrice: steamPriceSnapshot[game.steamId]?.oldPrice ?? game.oldPrice ?? 0, discount: steamPriceSnapshot[game.steamId]?.discount ?? game.discount ?? 0, tags: game.tags || ["Tendencia"], storeUrl: `https://store.steampowered.com/app/${game.steamId}/?cc=es&l=spanish` }));
+    const genres = ["Todos", ...new Set(games.map(game => game.genre))];
+    const imageUrl = (game) => game.steamData?.header_image || `https://cdn.akamai.steamstatic.com/steam/apps/${game.steamId}/header.jpg`;
+    const readStore = (key) => { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch { return {}; } };
+    let cart = readStore("arcade-cart-v1");
+    let wishlist = readStore("arcade-wishlist-v1");
+    let activeGenre = "Todos";
+    let activeCollection = "Todos";
+    let wishlistOnly = false;
+    const grid = document.getElementById("gameGrid");
+    const escapeHtml = (text) => text.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    const money = (amount) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
+    function persist() {
+      localStorage.setItem("arcade-cart-v1", JSON.stringify(cart));
+      localStorage.setItem("arcade-wishlist-v1", JSON.stringify(wishlist));
+    }
+    function visibleGames() {
+      const query = document.getElementById("searchInput").value.trim().toLocaleLowerCase("es");
+      let items = games.filter(game => {
+        const matchesQuery = `${game.title} ${game.genre} ${game.studio}`.toLocaleLowerCase("es").includes(query);
+        return matchesQuery && (activeGenre === "Todos" || game.genre === activeGenre) && (activeCollection === "Todos" || game.tags.includes(activeCollection)) && (!wishlistOnly || wishlist[game.id]);
+      });
+      const sort = document.getElementById("sortSelect").value;
+      if (sort === "price-low") items.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+      if (sort === "price-high") items.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
+      if (sort === "name") items.sort((a, b) => a.title.localeCompare(b.title, "es"));
+      return items;
+    }
+    function renderGames() {
+      const items = visibleGames();
+      document.getElementById("resultCount").textContent = `${items.length} ${items.length === 1 ? "juego" : "juegos"}`;
+      grid.innerHTML = items.length ? items.map(game => `<article class="game-card" data-game-id="${game.id}">
+        <div class="cover"><button type="button" class="cover-open" data-details="${game.id}" aria-label="Ver detalles de ${escapeHtml(game.title)}"><img src="${imageUrl(game)}" alt="Portada de ${escapeHtml(game.title)}" loading="lazy"></button><button type="button" class="wishlist ${wishlist[game.id] ? "saved" : ""}" data-wishlist="${game.id}" aria-label="${wishlist[game.id] ? "Quitar de" : "Añadir a"} favoritos" title="${wishlist[game.id] ? "Quitar de favoritos" : "Añadir a favoritos"}"><svg width="17" height="17" viewBox="0 0 24 24" fill="${wishlist[game.id] ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6l1.2 1.2L12 21l7.6-7.6 1.2-1.2a5.4 5.4 0 0 0 0-7.6Z"/></svg></button>${game.discount ? `<span class="discount">-${game.discount}%</span>` : ""}</div>
+        <div class="game-info"><h3 class="game-title" title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</h3><span class="game-genre">${escapeHtml(game.genre)} · ${escapeHtml(game.studio)}</span><div class="game-bottom"><span class="price">${game.price == null ? `<a class="price-link" href="${game.storeUrl}" target="_blank" rel="noreferrer">Consultar en Steam</a>` : game.price === 0 ? "Gratis" : `${game.oldPrice ? `<span class="old-price">${money(game.oldPrice)}</span>` : ""}${money(game.price)}`}</span>${game.price == null ? "" : `<button class="add-button" data-add="${game.id}" aria-label="Añadir ${escapeHtml(game.title)} al carrito" title="Añadir al carrito"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>`}</div></div>
+        <div class="game-hover-info" aria-hidden="true"><img class="game-hover-image" data-hover-image src="${imageUrl(game)}" alt=""><h3 class="game-hover-title">${escapeHtml(game.title)}</h3><p class="game-hover-meta">${escapeHtml(game.genre)} · ${escapeHtml(game.studio)}</p><p class="game-hover-description" data-hover-description>Descripción de Steam</p><p class="game-hover-price">${game.price == null ? "Consultar precio" : game.price === 0 ? "Gratis" : money(game.price)}</p></div>
+      </article>`).join("") : `<div class="empty-state">No encontramos juegos con esos filtros.<br>Prueba otra búsqueda o categoría.</div>`;
+    }
+    function renderGenres() {
+      document.getElementById("genreTabs").innerHTML = genres.map(genre => `<button class="genre-tab ${activeGenre === genre ? "active" : ""}" data-genre="${genre}">${genre}</button>`).join("");
+    }
+    const gameDialog = document.getElementById("gameDialog");
+    let activeDetailsGame = null;
+    let activeHls = null;
+    function parseRequirements(markup) {
+      if (typeof markup !== "string") return [];
+      const parsed = new DOMParser().parseFromString(markup, "text/html");
+      return [...parsed.querySelectorAll("li")].map(item => {
+        const text = item.textContent.replace(/\s+/g, " ").trim();
+        const separator = text.indexOf(":");
+        return separator < 0 ? ["", text] : [text.slice(0, separator).replace(/\*$/, "").trim(), text.slice(separator + 1).trim()];
+      }).filter(([, value]) => value);
+    }
+    function requirementRows(markup, title) {
+      const rows = parseRequirements(markup);
+      const content = rows.length ? `<dl class="requirements-list">${rows.map(([label, value]) => `<div class="requirement-row"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : `<p class="spec-intro">Requisitos técnicos no disponibles en esta ficha.</p>`;
+      return `<section class="requirements-block"><h3>${escapeHtml(title)}</h3>${content}</section>`;
+    }
+    async function loadSteamData(game, shouldRender = true) {
+      if (game.steamData) return game.steamData;
+      const apiBase = location.protocol === "file:" ? "http://127.0.0.1:8768" : "";
+      const response = await fetch(`${apiBase}/api/game?id=${encodeURIComponent(game.steamId)}`);
+      if (!response.ok) throw new Error("No se pudo consultar Steam.");
+      const payload = await response.json();
+      const entry = payload[game.steamId];
+      if (!entry?.success || !entry.data) throw new Error("La ficha no está disponible en Steam.");
+      const data = entry.data;
+      game.steamData = data;
+      game.studio = (data.developers || [])[0] || game.studio;
+      game.header = data.header_image || "";
+      if (data.is_free) game.price = 0;
+      else if (data.price_overview?.final != null) {
+        game.price = data.price_overview.final / 100;
+        game.oldPrice = data.price_overview.initial > data.price_overview.final ? data.price_overview.initial / 100 : 0;
+        game.discount = data.price_overview.discount_percent || 0;
+        if (game.discount && !game.tags.includes("Ofertas")) game.tags.push("Ofertas");
+      }
+      if (shouldRender) {
+        renderGames();
+        renderCart();
+      }
+      return data;
+    }
+    let hoverSummaryTimer = null;
+    let hoverImageTimer = null;
+    function stopHoverImageRotation() {
+      if (hoverImageTimer !== null) {
+        clearInterval(hoverImageTimer);
+        hoverImageTimer = null;
+      }
+    }
+    function startHoverImageRotation(card, game) {
+      stopHoverImageRotation();
+      const imageElement = card.querySelector("[data-hover-image]");
+      if (!imageElement) return;
+      const screenshots = (game.steamData?.screenshots || []).map(image => image.path_thumbnail || image.path_full).filter(Boolean);
+      const images = [...new Set([imageUrl(game), ...screenshots])];
+      let activeImage = 0;
+      imageElement.src = images[activeImage];
+      if (images.length < 2) return;
+      hoverImageTimer = window.setInterval(() => {
+        if (!card.matches(":hover") && !card.contains(document.activeElement)) {
+          stopHoverImageRotation();
+          return;
+        }
+        activeImage = (activeImage + 1) % images.length;
+        imageElement.src = images[activeImage];
+      }, 2500);
+    }
+    function queueHoverSummary(event) {
+      const card = event.target.closest(".game-card");
+      if (!card || card.contains(event.relatedTarget)) return;
+      const game = games.find(item => item.id === card.dataset.gameId);
+      const description = card.querySelector("[data-hover-description]");
+      if (!game || !description) return;
+      startHoverImageRotation(card, game);
+      if (game.shortDescription) {
+        description.textContent = game.shortDescription;
+        return;
+      }
+      clearTimeout(hoverSummaryTimer);
+      description.textContent = "Cargando descripción...";
+      hoverSummaryTimer = setTimeout(async () => {
+        try {
+          const data = await loadSteamData(game, false);
+          game.shortDescription = data.short_description || `${game.title} · ${game.genre} · ${game.studio}.`;
+          if (card.matches(":hover") || card.contains(document.activeElement)) startHoverImageRotation(card, game);
+        } catch {
+          game.shortDescription = `${game.title} · ${game.genre} · ${game.studio}.`;
+        }
+        description.textContent = game.shortDescription;
+      }, 300);
+    }
+    grid.addEventListener("pointerover", queueHoverSummary);
+    grid.addEventListener("focusin", queueHoverSummary);
+    grid.addEventListener("pointerout", event => {
+      const card = event.target.closest(".game-card");
+      if (card && !card.contains(event.relatedTarget)) {
+        clearTimeout(hoverSummaryTimer);
+        if (!card.contains(document.activeElement)) stopHoverImageRotation();
+      }
+    });
+    function renderGameDetails(game, data) {
+      const screenshots = (data.screenshots || []).slice(0, 6).map(image => image.path_thumbnail || image.path_full).filter(Boolean);
+      game.gallery = screenshots.length ? screenshots : [game.header || imageUrl(game)];
+      const trailer = (data.movies || []).find(movie => movie.highlight) || (data.movies || [])[0];
+      game.trailer = game.noTrailer ? "" : game.trailerOverride || trailer?.hls_h264 || "";
+      game.trailerName = game.noTrailer ? "" : game.trailerName || trailer?.name || "Tráiler oficial";
+      const minimum = data.pc_requirements?.minimum;
+      const recommended = data.pc_requirements?.recommended;
+      const description = data.short_description || game.shortDescription || game.localDescription || `${game.title} es un juego de ${game.genre.toLocaleLowerCase("es")} desarrollado por ${game.studio}.`;
+      const playerMarkup = game.noTrailer ? "" : game.trailer ? `<video class="trailer-player" controls preload="none" poster="${game.gallery[0]}" aria-label="${escapeHtml(game.trailerName)} de ${escapeHtml(game.title)}"></video>` : `<p class="spec-intro">No hay un tráiler disponible para este juego.</p>`;
+      const trailerMarkup = game.noTrailer || !game.trailer ? "" : `<h3 class="trailer-title">${escapeHtml(game.trailerName)}</h3>${playerMarkup}<a class="trailer-fallback" id="trailerFallback" href="${game.storeUrl}" target="_blank" rel="noreferrer">Abrir tráiler en la tienda oficial ↗</a>`;
+      gameDialog.innerHTML = `<div class="detail-head"><div><span class="eyebrow">${escapeHtml(game.genre)} · ${escapeHtml(game.studio)}</span><h2 id="detailTitle">${escapeHtml(game.title)}</h2></div><button class="close-button" data-close-details aria-label="Cerrar ficha">×</button></div><div class="detail-layout"><section class="detail-media ${game.noTrailer ? "images-only" : ""}" aria-label="Imágenes del juego"><img class="detail-main-image" id="detailImage" src="${game.gallery[0]}" alt="Captura de ${escapeHtml(game.title)}"><div class="gallery-strip">${game.gallery.map((image, index) => `<button class="gallery-thumb" data-gallery="${index}" aria-label="Ver captura ${index + 1}" aria-current="${index === 0}"><img src="${image}" alt=""></button>`).join("")}</div><p class="detail-description">${escapeHtml(description)}</p>${trailerMarkup}<a class="detail-source" href="${game.storeUrl}" target="_blank" rel="noreferrer">Ver ficha oficial y consultar precio ↗</a></section><section class="detail-specs"><p class="spec-intro">Requisitos publicados por Steam para PC/Windows. Las imágenes proceden de la ficha oficial del juego.</p>${requirementRows(minimum, "Requisitos mínimos")}${requirementRows(recommended, "Requisitos recomendados")}<p class="spec-intro">Precio consultado en Steam España: <strong>${game.price == null ? "No disponible" : game.price === 0 ? "Gratis" : money(game.price)}</strong>. Puede cambiar según la región o las ofertas vigentes.</p></section></div>`;
+      if (game.trailer && !game.noTrailer) {
+        const player = gameDialog.querySelector("video");
+        if (player.canPlayType("application/vnd.apple.mpegurl")) player.src = game.trailer;
+        else if (window.Hls && Hls.isSupported()) {
+          activeHls = new Hls();
+          activeHls.loadSource(game.trailer);
+          activeHls.attachMedia(player);
+        } else gameDialog.querySelector("#trailerFallback").style.display = "inline-block";
+      }
+    }
+    function stopTrailer() {
+      const player = gameDialog.querySelector("video");
+      if (player) { player.pause(); player.removeAttribute("src"); player.load(); }
+      if (activeHls) { activeHls.destroy(); activeHls = null; }
+    }
+    async function showGameDetails(gameId) {
+      const game = games.find(item => item.id === gameId);
+      if (!game) return;
+      stopTrailer();
+      activeDetailsGame = game;
+      gameDialog.showModal();
+      renderGameDetails(game, game.steamData || {});
+      try {
+        const data = await loadSteamData(game);
+        if (!gameDialog.open || activeDetailsGame !== game) return;
+        renderGameDetails(game, data);
+      } catch {
+        return;
+      }
+    }
+    gameDialog.addEventListener("click", event => {
+      if (event.target === gameDialog || event.target.closest("[data-close-details]")) { gameDialog.close(); return; }
+      const thumbnail = event.target.closest("[data-gallery]");
+      if (!thumbnail || !activeDetailsGame) return;
+      const index = Number(thumbnail.dataset.gallery);
+      gameDialog.querySelector("#detailImage").src = activeDetailsGame.gallery[index];
+      gameDialog.querySelectorAll("[data-gallery]").forEach(button => button.setAttribute("aria-current", String(button === thumbnail)));
+    });
+    gameDialog.addEventListener("close", stopTrailer);
+    function renderCart() {
+      const entries = Object.entries(cart).filter(([id, qty]) => qty > 0 && games.some(game => game.id === id && game.price != null));
+      if (entries.length !== Object.keys(cart).length) {
+        cart = Object.fromEntries(entries);
+        persist();
+      }
+      const count = entries.reduce((sum, [, qty]) => sum + qty, 0);
+      document.getElementById("cartCount").textContent = count;
+      document.getElementById("cartTitleCount").textContent = count ? `(${count})` : "";
+      const items = document.getElementById("cartItems");
+      const summary = document.getElementById("cartSummary");
+      if (!entries.length) {
+        items.innerHTML = `<div class="cart-empty"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><br>Tu próxima aventura empieza aquí.<br>Añade un juego para continuar.</div>`;
+        summary.innerHTML = "";
+        return;
+      }
+      let total = 0;
+      items.innerHTML = entries.map(([id, qty]) => {
+        const game = games.find(item => item.id === id);
+        if (!game) return "";
+        total += game.price * qty;
+        return `<div class="cart-item"><img src="${imageUrl(game)}" alt=""><div><h3>${escapeHtml(game.title)}</h3><small>${money(game.price)} cada uno</small><div class="quantity"><button data-qty="${id}" data-delta="-1" aria-label="Quitar una unidad">−</button><span>${qty}</span><button data-qty="${id}" data-delta="1" aria-label="Añadir una unidad">+</button><button class="remove-item" data-remove="${id}">Eliminar</button></div></div><span class="cart-price">${money(game.price * qty)}</span></div>`;
+      }).join("");
+      summary.innerHTML = `<div class="summary-row"><span>Subtotal</span><strong>${money(total)}</strong></div><button class="primary-button checkout" id="checkoutButton">Continuar con la compra <span aria-hidden="true">→</span></button>`;
+      document.getElementById("checkoutButton").addEventListener("click", () => notify("Demo: el pago no está conectado."));
+    }
+    function notify(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(notify.timer);
+      notify.timer = setTimeout(() => toast.classList.remove("show"), 2100);
+    }
+    function setCartOpen(open) {
+      document.getElementById("cartDrawer").classList.toggle("open", open);
+      document.getElementById("backdrop").classList.toggle("open", open);
+      document.getElementById("cartDrawer").setAttribute("aria-hidden", String(!open));
+      document.body.style.overflow = open ? "hidden" : "";
+    }
+    function setCollection(collection) {
+      activeCollection = collection;
+      wishlistOnly = false;
+      document.querySelectorAll(".filter-option[data-collection]").forEach(button => button.classList.toggle("selected", button.dataset.collection === collection));
+      renderGames();
+    }
+    document.getElementById("genreTabs").addEventListener("click", event => {
+      const button = event.target.closest("[data-genre]");
+      if (!button) return;
+      activeGenre = button.dataset.genre;
+      renderGenres();
+      renderGames();
+    });
+    document.querySelectorAll(".filter-option[data-collection]").forEach(button => button.addEventListener("click", () => setCollection(button.dataset.collection)));
+    document.querySelectorAll("[data-nav-filter]").forEach(link => link.addEventListener("click", () => setCollection(link.dataset.navFilter)));
+    document.getElementById("searchInput").addEventListener("input", renderGames);
+    document.getElementById("sortSelect").addEventListener("change", renderGames);
+    document.getElementById("headerSearch").addEventListener("click", () => { document.getElementById("searchInput").focus(); document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" }); });
+    document.getElementById("wishlistView").addEventListener("click", () => { wishlistOnly = !wishlistOnly; activeCollection = "Todos"; document.querySelectorAll(".filter-option[data-collection]").forEach(button => button.classList.toggle("selected", button.dataset.collection === "Todos")); document.getElementById("wishlistView").textContent = wishlistOnly ? "♡ Ver toda la tienda" : "♡ Mi lista"; renderGames(); });
+    document.getElementById("railWishlist").addEventListener("click", () => { wishlistOnly = true; activeCollection = "Todos"; document.querySelectorAll(".filter-option[data-collection]").forEach(button => button.classList.remove("selected")); renderGames(); });
+    grid.addEventListener("click", async event => {
+      const add = event.target.closest("[data-add]");
+      const favorite = event.target.closest("[data-wishlist]");
+      const details = event.target.closest("[data-details]");
+      if (details) showGameDetails(details.dataset.details);
+      if (add) {
+        const game = games.find(item => item.id === add.dataset.add);
+        try {
+          if (game.price == null) await loadSteamData(game);
+          if (game.price == null) { notify("Consulta el precio en la tienda oficial."); return; }
+          cart[game.id] = (cart[game.id] || 0) + 1;
+          persist(); renderCart(); notify("Añadido al carrito");
+        } catch { notify("No se pudo consultar el precio ahora."); }
+      }
+      if (favorite) {
+        const id = favorite.dataset.wishlist;
+        wishlist[id] = !wishlist[id];
+        if (!wishlist[id]) delete wishlist[id];
+        persist(); renderGames();
+      }
+    });
+    document.getElementById("cartItems").addEventListener("click", event => {
+      const quantity = event.target.closest("[data-qty]");
+      const remove = event.target.closest("[data-remove]");
+      if (quantity) {
+        const id = quantity.dataset.qty;
+        cart[id] = (cart[id] || 0) + Number(quantity.dataset.delta);
+        if (cart[id] <= 0) delete cart[id];
+      }
+      if (remove) delete cart[remove.dataset.remove];
+      persist(); renderCart();
+    });
+    const heroImageSlides = [...document.querySelectorAll(".hero-image-carousel img")];
+    let activeHeroSlide = 0;
+    function rotateHeroImages() {
+      heroImageSlides[activeHeroSlide].classList.remove("active");
+      activeHeroSlide = (activeHeroSlide + 1) % heroImageSlides.length;
+      heroImageSlides[activeHeroSlide].classList.add("active");
+    }
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) window.setInterval(rotateHeroImages, 5000);
+    document.getElementById("heroBuy").addEventListener("click", () => showGameDetails("gta-v"));
+    document.getElementById("openCart").addEventListener("click", () => setCartOpen(true));
+    document.getElementById("closeCart").addEventListener("click", () => setCartOpen(false));
+    document.getElementById("backdrop").addEventListener("click", () => setCartOpen(false));
+    document.addEventListener("keydown", event => { if (event.key === "Escape") setCartOpen(false); });
+    async function initializeStore() {
+      const savedEntries = Object.entries(cart).filter(([id, quantity]) => quantity > 0 && games.some(game => game.id === id));
+      cart = Object.fromEntries(savedEntries);
+      for (const [id] of savedEntries) {
+        const game = games.find(item => item.id === id);
+        try { await loadSteamData(game, false); }
+        catch { if (game.price == null) delete cart[id]; }
+      }
+      persist();
+      renderGenres();
+      renderGames();
+      renderCart();
+    }
+    initializeStore();
+  </script>
+</body>
+</html>
